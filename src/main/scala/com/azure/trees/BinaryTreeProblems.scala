@@ -62,7 +62,16 @@ case class BNode[+T](override val value: T, override val left:BTree[T], override
   override def collectNodes(level: Int): List[BTree[T]] = {
     @tailrec
     def collectNodesTailrec(currentLevel:  Int, currentNodes: List[BTree[T]]): List[BTree[T]] = {
+      if(currentNodes.isEmpty)List()
+      else if (currentLevel == level) currentNodes
+      else {
+        val expandedNodes = for {
+          node <- currentNodes
+          child <- List(node.left, node.right) if !child.isEmpty
+        } yield child
 
+        collectNodesTailrec(currentLevel + 1, expandedNodes)
+      }
     }
 
     if(level < 0) List()
@@ -92,9 +101,27 @@ object BinaryTreeProblems extends App {
     )
   )
 
+  val tree10xExtra = BNode(10,
+    BNode(20,
+      BNode(30, BEnd, BEnd),
+      BNode(40,
+        BEnd,
+        BNode(50, BEnd, BEnd)
+      )
+    ),
+    BNode(60,
+      BNode(70, BEnd, BEnd),
+      BNode(80, BEnd, BEnd)
+    )
+  )
+
   println(tree.collectLeaves.map(_.value))
   println(tree.leafCount)
 
   val degenerate = (1 to 100000).foldLeft[BTree[Int]](BEnd)((tree, number) => BNode(number, tree, BEnd))
   println(degenerate.size)
+
+  println(tree.collectNodes(0).map(_.value))
+  println(tree.collectNodes(2).map(_.value))
+  println(tree.collectNodes(6473).map(_.value))
 }
